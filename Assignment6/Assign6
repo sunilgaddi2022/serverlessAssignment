@@ -1,0 +1,18 @@
+import boto3
+from datetime import datetime
+
+def lambda_handler(event, context):
+    ec2_client = boto3.client('ec2')
+    instance_id = event['detail']['instance-id']
+    
+    # Tag the instance with the current date and a custom tag
+    current_date = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    ec2_client.create_tags(
+        Resources=[instance_id],
+        Tags=[
+            {'Key': 'LaunchDate', 'Value': current_date},
+            {'Key': 'CustomTag', 'Value': 'YourCustomTag'}
+        ]
+    )
+    
+    print(f"Instance {instance_id} tagged with LaunchDate: {current_date} and CustomTag: YourCustomTag")

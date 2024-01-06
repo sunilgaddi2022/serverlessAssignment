@@ -1,0 +1,29 @@
+import boto3
+from datetime import datetime, timedelta
+
+def lambda_handler(event, context):
+    # Step 1: Initialize a boto3 EC2 client
+    ec2_client = boto3.client('ec2')
+
+    # Step 2: Create a snapshot for the specified EBS volume
+    volume_id = 'your_volume_id_here'  # Replace with your actual volume ID
+    snapshot_description = f'Automated snapshot for {volume_id} on {datetime.now()}'
+    
+    snapshot_response = ec2_client.create_snapshot(
+        VolumeId=volume_id,
+        Description=snapshot_description
+    )
+    
+    snapshot_id = snapshot_response['SnapshotId']
+    
+    # Step 3: List snapshots and delete those older than 30 days
+    snapshots = ec2_client.describe_snapshots(Filters=[{'Name': 'volume-id', 'Values': [volume_id]}])['Snapshots']
+    cutoff_date = datetime.now() - timedelta(days=30)
+
+    for snapshot in snapshots:
+        if snapshot['StartTime'] < cutoff_date:
+            ec2_client.delete_snapshot(SnapshotId=snapshot['SnapshotId'])
+
+    # Step 4: Print the IDs of the created and deleted snapshots for logging
+    print(f"Snapshot created: {snapshot_id}")
+    print(f"Snapshots deleted: {[snapshot['SnapshotId'] for snapshot in snapshots if snapshot['StartTime'] < cutoff_date]}")

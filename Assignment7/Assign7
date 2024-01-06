@@ -1,0 +1,35 @@
+import boto3
+
+def lambda_handler(event, context):
+    # Initialize boto3 clients for CloudWatch and SNS
+    cloudwatch = boto3.client('cloudwatch')
+    sns = boto3.client('sns')
+    
+    # Retrieve the AWS billing metric from CloudWatch
+    metric_name = 'EstimatedCharges'
+    namespace = 'AWS/Billing'
+    
+    response = cloudwatch.get_metric_statistics(
+        Namespace=namespace,
+        MetricName=metric_name,
+        Dimensions=[{'Name': 'Currency', 'Value': 'USD'}],
+        StartTime='2023-01-01T00:00:00Z',
+        EndTime='2023-01-02T00:00:00Z',
+        Period=86400,
+        Statistics=['Maximum']
+    )
+    
+    # Get the maximum billing value
+    billing_amount = response['Datapoints'][0]['Maximum']
+    
+    # Compare the billing amount with a threshold (e.g., $50)
+    threshold = 50.0
+    
+    if billing_amount > threshold:
+        # If the billing exceeds the threshold, send an SNS notification
+        topic_arn = 'your_sns_topic_arn'
+        message = f'AWS Billing exceeded the threshold. Current amount: ${billing_amount}'
+        sns.publish(TopicArn=topic_arn, Message=message, Subject='High AWS Billing Alert')
+    
+    # Print messages for logging purposes
+    print(f'Current AWS Billing: ${billing_amount}')

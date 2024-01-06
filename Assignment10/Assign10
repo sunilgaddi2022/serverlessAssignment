@@ -1,0 +1,16 @@
+import boto3
+from datetime import datetime, timedelta
+import logging
+
+def lambda_handler(event, context):
+    # Set up S3 and Glacier clients
+    s3 = boto3.client('s3')
+    glacier = boto3.client('glacier')
+
+    # Define the S3 bucket and prefix
+    bucket_name = 'your-s3-bucket-name'
+    prefix = 'your-prefix/'
+
+    # Calculate the date threshold for archiving (6 months ago)
+    threshold_date = datetime.now() - timedelta(days=6*30)
+

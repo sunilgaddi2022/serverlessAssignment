@@ -1,0 +1,21 @@
+# Python script using Boto3 for AWS Lambda function
+
+import json
+import boto3
+
+def lambda_handler(event, context):
+    # Step 2.1: Extract the user review from an event
+    user_review = event['review']
+    
+    # Step 2.2: Use Amazon Comprehend to analyze the sentiment of the review
+    comprehend = boto3.client('comprehend')
+    response = comprehend.detect_sentiment(Text=user_review, LanguageCode='en')
+    
+    # Step 2.3: Log the sentiment result
+    sentiment_result = response['Sentiment']
+    print(f"Sentiment analysis result for the review: {sentiment_result}")
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Sentiment analysis completed successfully!')
+    }

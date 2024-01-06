@@ -1,0 +1,19 @@
+# Import necessary libraries
+import boto3
+import datetime
+
+# Define the RDS instance name
+rds_instance_name = "your_rds_instance_name"
+
+def lambda_handler(event, context):
+    # Initialize boto3 RDS client
+    rds_client = boto3.client('rds')
+
+    # Take a snapshot of the specified RDS instance
+    snapshot_response = rds_client.create_db_snapshot(
+        DBSnapshotIdentifier=f"{rds_instance_name}-snapshot-{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}",
+        DBInstanceIdentifier=rds_instance_name
+    )
+
+    # Print the snapshot ID for logging purposes
+    print(f"Snapshot ID: {snapshot_response['DBSnapshot']['DBSnapshotIdentifier']}")
